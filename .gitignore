@@ -1,0 +1,72 @@
+# 操作系统生成的文件
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 日志文件
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 依赖目录
+/node_modules
+/bower_components
+/.pnp
+.pnp.js
+
+# 构建输出
+/dist
+/build
+/out
+/target
+/bin
+/venv
+/app/*/__pycache__
+__pycache__
+# 本地环境文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE 和编辑器文件
+/.idea
+/.vscode
+*.sublime-project
+*.sublime-workspace
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 临时文件
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# 缓存目录
+.cache/
+.npm/
+.eslintcache
+
+# 测试覆盖率报告
+/coverage
+
+# 生产环境打包文件
+*.zip
+*.tar.gz
+*.rar
+
+# 其他常见忽略文件
+.sass-cache/
+.gradle/
