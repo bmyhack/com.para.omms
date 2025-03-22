@@ -10,7 +10,7 @@ T = TypeVar('T')
 
 class ResponseCode(str, Enum):
     """响应状态码枚举"""
-    SUCCESS = "0"               # 成功
+    SUCCESS = "200"               # 成功
     PARAM_ERROR = "400"         # 参数错误
     UNAUTHORIZED = "401"        # 未授权
     FORBIDDEN = "403"           # 禁止访问
