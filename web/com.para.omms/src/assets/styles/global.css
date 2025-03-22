@@ -1,0 +1,62 @@
+/* 主题颜色变量 */
+:root {
+  --primary-gradient-start: #1e3c72;
+  --primary-gradient-end: #2a5298;
+  --secondary-gradient-start: #3494e6;
+  --secondary-gradient-end: #ec6ead;
+  --primary-text: #303133;
+  --secondary-text: #909399;
+  --light-text: #ffffff;
+  --background-color: #f0f2f5;
+  --border-color: #dcdfe6;
+  --box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+/* 覆盖Element Plus的主题色 */
+.el-button--primary {
+  --el-button-bg-color: var(--primary-gradient-start);
+  --el-button-border-color: var(--primary-gradient-start);
+  --el-button-hover-bg-color: var(--primary-gradient-end);
+  --el-button-hover-border-color: var(--primary-gradient-end);
+}
+
+.el-pagination.is-background .el-pager li:not(.is-disabled).is-active {
+  background-color: var(--primary-gradient-start);
+}
+
+.el-menu-item.is-active {
+  background: linear-gradient(90deg, var(--secondary-gradient-start), var(--secondary-gradient-end)) !important;
+}
+
+/* 卡片样式 */
+.el-card {
+  border-radius: 8px;
+  box-shadow: var(--box-shadow);
+  margin-bottom: 20px;
+}
+
+.el-card__header {
+  border-bottom: 1px solid var(--border-color);
+  padding: 15px 20px;
+}
+
+/* 表格样式 */
+.el-table th {
+  background-color: #f5f7fa;
+}
+
+/* 表单样式 */
+.el-form-item__label {
+  font-weight: 500;
+}
+
+/* 全局过渡效果 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
