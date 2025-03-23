@@ -36,7 +36,7 @@ const goHome = () => {
   font-size: 120px;
   margin: 0;
   background: linear-gradient(90deg, #3494e6, #ec6ead);
-  -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   line-height: 1;
 }

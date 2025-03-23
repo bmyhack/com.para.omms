@@ -46,11 +46,25 @@
           <span>告警监控</span>
         </el-menu-item>
         
-        <!-- 维修工单 -->
-        <el-menu-item index="repair">
-          <el-icon><el-icon-document /></el-icon>
-          <span>维修工单</span>
-        </el-menu-item>
+        <!-- 维修工单菜单组 -->
+        <el-sub-menu index="repair">
+          <template #title>
+            <el-icon><el-icon-document /></el-icon>
+            <span>维修工单</span>
+          </template>
+          <el-menu-item index="repair-pending">
+            <el-icon><el-icon-timer /></el-icon>
+            <span>未处理</span>
+          </el-menu-item>
+          <el-menu-item index="repair-processing">
+            <el-icon><el-icon-loading /></el-icon>
+            <span>处理中</span>
+          </el-menu-item>
+          <el-menu-item index="repair-completed">
+            <el-icon><el-icon-circle-check /></el-icon>
+            <span>已完成</span>
+          </el-menu-item>
+        </el-sub-menu>
         
         <!-- 基础设置菜单组 -->
         <el-sub-menu index="basic">
@@ -112,14 +126,14 @@
         </div>
         
         <div class="header-right">
-          <el-dropdown>
+          <el-dropdown @command="handleCommand">
             <span class="user-info">
               管理员 <el-icon><el-icon-arrow-down /></el-icon>
             </span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item>个人信息</el-dropdown-item>
-                <el-dropdown-item divided>退出登录</el-dropdown-item>
+                <el-dropdown-item command="profile">个人信息</el-dropdown-item>
+                <el-dropdown-item divided command="logout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
@@ -131,12 +145,40 @@
         <router-view />
       </el-main>
     </el-container>
+    
+    <!-- 添加个人信息抽屉 -->
+    <CommonDrawer
+      v-model="profileDrawerVisible"
+      title="个人信息"
+      @confirm="saveProfile"
+      @cancel="profileDrawerVisible = false"
+    >
+      <div class="profile-content">
+        <el-form label-width="80px">
+          <el-form-item label="用户名">
+            <el-input v-model="userProfile.username" disabled />
+          </el-form-item>
+          <el-form-item label="姓名">
+            <el-input v-model="userProfile.name" />
+          </el-form-item>
+          <el-form-item label="邮箱">
+            <el-input v-model="userProfile.email" />
+          </el-form-item>
+          <el-form-item label="手机号">
+            <el-input v-model="userProfile.phone" />
+          </el-form-item>
+          <el-form-item label="角色">
+            <el-input v-model="userProfile.role" disabled />
+          </el-form-item>
+        </el-form>
+      </div>
+    </CommonDrawer>
   </el-container>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, reactive } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { 
   Odometer as ElIconOdometer,
   User as ElIconUser,
@@ -154,8 +196,12 @@ import {
   OfficeBuilding as ElIconOfficeBuilding,
   Notebook as ElIconNotebook,
   Files as ElIconFiles,
-  Cpu as ElIconCpu
+  Cpu as ElIconCpu,
+  Timer as ElIconTimer,
+  Loading as ElIconLoading,
+  CircleCheck as ElIconCircleCheck
 } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 // 控制侧边栏折叠状态
 const isCollapse = ref(false)
@@ -167,21 +213,23 @@ const toggleSidebar = () => {
 
 // 获取当前路由
 const route = useRoute()
+const router = useRouter()
 
 // 计算当前激活的菜单项
-const activeMenu = computed(() => {
-  const path = route.path.split('/')[1] || 'dashboard'
-  // 如果是子菜单，返回对应的路径
-  const subMenuItems = [
-    'user', 'role', 'permission',
-    'gpu', 'cpu', 'storage',
-    'device', 'supplier', 'model'
-  ]
-  if(subMenuItems.includes(path)) {
+  const activeMenu = computed(() => {
+    const path = route.path.split('/')[1] || 'dashboard'
+    // 如果是子菜单，返回对应的路径
+    const subMenuItems = [
+      'user', 'role', 'permission',
+      'gpu', 'cpu', 'storage',
+      'device', 'supplier', 'model',
+      'repair-pending', 'repair-processing', 'repair-completed'
+    ]
+    if(subMenuItems.includes(path)) {
+      return path
+    }
     return path
-  }
-  return path
-})
+  })
 
 // 简化面包屑实现，直接使用路由名称
 const currentRoute = computed(() => {
@@ -200,6 +248,9 @@ const currentRoute = computed(() => {
     'storage': '存储管理',
     'alarm': '告警监控',
     'repair': '维修工单',
+    'repair-pending': '未处理工单',
+    'repair-processing': '处理中工单',
+    'repair-completed': '已完成工单',
     'basic': '基础设置',
     'device': '设备管理',
     'supplier': '供应商管理',
@@ -208,6 +259,36 @@ const currentRoute = computed(() => {
   
   return routeMap[pathSegment] || pathSegment
 })
+
+// 个人信息抽屉控制
+const profileDrawerVisible = ref(false)
+
+// 用户个人信息
+const userProfile = reactive({
+  username: 'admin',
+  name: '系统管理员',
+  email: 'admin@example.com',
+  phone: '13800138000',
+  role: '超级管理员'
+})
+
+// 处理下拉菜单命令
+const handleCommand = (command: string) => {
+  if (command === 'profile') {
+    profileDrawerVisible.value = true
+  } else if (command === 'logout') {
+    // 这里可以添加退出登录的逻辑
+    ElMessage.success('退出登录成功')
+    router.push('/login')
+  }
+}
+
+// 保存个人信息
+const saveProfile = () => {
+  // 这里可以添加保存个人信息的逻辑，例如发送API请求
+  ElMessage.success('个人信息保存成功')
+  profileDrawerVisible.value = false
+}
 </script>
 
 <style scoped>
@@ -333,5 +414,13 @@ const currentRoute = computed(() => {
 
 :deep(.el-breadcrumb__separator) {
   color: rgba(255, 255, 255, 0.7);
+}
+</style>
+
+<style scoped>
+/* 保持原有样式不变 */
+
+.profile-content {
+  padding: 20px;
 }
 </style>

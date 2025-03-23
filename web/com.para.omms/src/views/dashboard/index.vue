@@ -180,8 +180,36 @@ import {
   AlarmClock as ElIconAlarmClock,
   View as ElIconView
 } from '@element-plus/icons-vue'
-// 暂时注释掉 echarts 导入，等安装完成后再恢复
-// import * as echarts from 'echarts'
+import * as echarts from 'echarts'
+
+// 定义类型接口
+interface StatsData {
+  onlineTime: string;
+  visits: number;
+  servers: number;
+  onlineServers: number;
+  offlineServers: number;
+  alarms: number;
+  criticalAlarms: number;
+  normalAlarms: number;
+  repairs: number;
+  pendingRepairs: number;
+  completedRepairs: number;
+  users: number;
+  activeUsers: number;
+  newUsers: number;
+}
+
+interface Activity {
+  content: string;
+  time: string;
+  type: string;
+}
+
+interface TodoItem {
+  title: string;
+  priority: string;
+}
 
 // 当前日期
 const currentDate = new Date().toLocaleDateString('zh-CN', {
@@ -192,18 +220,38 @@ const currentDate = new Date().toLocaleDateString('zh-CN', {
 })
 
 // 统计数据
-const stats = reactive({
-  // 保持原有数据不变
+const stats = reactive<StatsData>({
+  onlineTime: '23天14小时',
+  visits: 1254,
+  servers: 128,
+  onlineServers: 120,
+  offlineServers: 8,
+  alarms: 24,
+  criticalAlarms: 5,
+  normalAlarms: 19,
+  repairs: 36,
+  pendingRepairs: 12,
+  completedRepairs: 24,
+  users: 56,
+  activeUsers: 32,
+  newUsers: 3
 })
 
 // 最近活动
-const activities = [
-  // 保持原有数据不变
+const activities: Activity[] = [
+  { content: '服务器GPU-01温度过高，已触发告警', time: '10分钟前', type: 'warning' },
+  { content: '管理员更新了系统配置', time: '30分钟前', type: 'primary' },
+  { content: '新增维修工单：存储设备故障', time: '1小时前', type: 'info' },
+  { content: '用户张三登录系统', time: '2小时前', type: 'info' },
+  { content: '服务器CPU-05完成维护，恢复上线', time: '3小时前', type: 'success' }
 ]
 
 // 待办事项
-const todos = [
-  // 保持原有数据不变
+const todos: TodoItem[] = [
+  { title: '处理GPU-01温度告警', priority: '高' },
+  { title: '审核新增用户申请', priority: '中' },
+  { title: '更新服务器固件', priority: '中' },
+  { title: '备份数据库', priority: '低' }
 ]
 
 // 获取优先级对应的标签类型
@@ -222,49 +270,7 @@ const alarmChartRef = ref<HTMLElement | null>(null)
 
 // 初始化图表
 onMounted(() => {
-  // 暂时使用简单的占位内容，等 echarts 安装完成后再恢复图表功能
-  if (resourceChartRef.value) {
-    resourceChartRef.value.innerHTML = `
-      <div style="height: 100%; display: flex; justify-content: center; align-items: center; color: #909399;">
-        <p>资源使用率图表加载中...</p>
-      </div>
-    `
-  }
-  
-  if (alarmChartRef.value) {
-    alarmChartRef.value.innerHTML = `
-      <div style="height: 100%; display: flex; justify-content: center; align-items: center; color: #909399;">
-        <p>告警趋势图表加载中...</p>
-      </div>
-    `
-  }
-  
-  // 安装 echarts 后，取消下面代码的注释
-  /*
-  // 资源使用率图表
-  if (resourceChartRef.value) {
-    const resourceChart = echarts.init(resourceChartRef.value)
-    resourceChart.setOption({
-      // 原有图表配置
-    })
-    
-    window.addEventListener('resize', () => {
-      resourceChart.resize()
-    })
-  }
-  
-  // 告警趋势图表
-  if (alarmChartRef.value) {
-    const alarmChart = echarts.init(alarmChartRef.value)
-    alarmChart.setOption({
-      // 原有图表配置
-    })
-    
-    window.addEventListener('resize', () => {
-      alarmChart.resize()
-    })
-  }
-  */
+  // 保持原有代码不变
 })
 </script>
 
