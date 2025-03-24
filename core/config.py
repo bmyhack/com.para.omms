@@ -13,7 +13,8 @@ DEFAULT_CONFIG = {
     "DATABASE_PORT": "3306",  
     "DATABASE_USER": "omms",
     "DATABASE_PASSWORD": "omms",
-    "DATABASE_NAME": "omms"
+    "DATABASE_NAME": "omms",
+    "DB_ECHO": "True"
 }
 
 # 加载环境变量
@@ -54,6 +55,7 @@ class Settings(BaseSettings):
     DATABASE_USER: str = os.getenv("DATABASE_USER", DEFAULT_CONFIG["DATABASE_USER"])
     DATABASE_PASSWORD: str = os.getenv("DATABASE_PASSWORD", DEFAULT_CONFIG["DATABASE_PASSWORD"])
     DATABASE_NAME: str = os.getenv("DATABASE_NAME", DEFAULT_CONFIG["DATABASE_NAME"])
+    DB_ECHO: bool = os.getenv("DB_ECHO", DEFAULT_CONFIG["DB_ECHO"]).lower() == "true"
     DATABASE_URL: str = "mysql+aiomysql://{user}:{password}@{host}:{port}/{db}".format(
         user=DATABASE_USER,
         password=DATABASE_PASSWORD,

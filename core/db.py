@@ -37,26 +37,37 @@ async def init_db():
         raise
 
 # 异步上下文管理器用于管理会话
-@asynccontextmanager
-async def get_db_session():
-    session = AsyncSessionLocal()
-    info("数据库会话已创建")
-    try:
-        yield session
-        await session.commit()
-        info("数据库事务已提交")
-    except Exception as e:
-        await session.rollback()
-        error(f"数据库事务回滚: {e}")
-        raise e
-    finally:
-        await session.close()
-        info("数据库会话已关闭")
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from contextlib import asynccontextmanager
 
-# 依赖注入函数
-async def get_db() -> AsyncSession:
-    async with get_db_session() as session:
-        yield session
+from .config import settings
+
+# 创建异步引擎
+engine = create_async_engine(
+    settings.DATABASE_URL,
+    echo=settings.DB_ECHO,
+    future=True
+)
+
+# 创建异步会话工厂
+async_session_factory = sessionmaker(
+    engine, 
+    class_=AsyncSession, 
+    expire_on_commit=False
+)
+
+async def get_db():
+    """
+    获取数据库会话的依赖项函数
+    """
+    async with async_session_factory() as session:
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
 
 Base = declarative_base()
 
