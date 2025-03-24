@@ -19,8 +19,13 @@ async def init_db():
     """初始化数据库引擎和会话工厂"""
     global engine, AsyncSessionLocal
     try:
-        # 使用异步引擎，URL格式：postgresql+asyncpg://user:password@host:port/dbname
-        engine = create_async_engine(settings.DATABASE_URL, echo=False)
+        # 使用异步引擎，URL格式：mysql+aiomysql://user:password@host:port/dbname
+        engine = create_async_engine(
+            settings.DATABASE_URL, 
+            echo=False,
+            pool_recycle=3600,  # 连接回收时间，避免MySQL的wait_timeout断开连接
+            pool_pre_ping=True  # 连接前ping一下，确保连接有效
+        )
         info("数据库引擎创建成功")
         # 创建异步会话工厂
         AsyncSessionLocal = sessionmaker(
@@ -79,6 +84,9 @@ async def verify_database_connection():
         # 创建所有表
         async with engine.begin() as conn:
             info("正在检查并创建数据库表...")
+            # 为MySQL设置字符集和引擎
+            await conn.execute(text("SET NAMES utf8mb4"))
+            await conn.execute(text("SET CHARACTER SET utf8mb4"))
             await conn.run_sync(Base.metadata.create_all)
             info("数据库表创建/更新完成")
         

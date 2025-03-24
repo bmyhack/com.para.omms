@@ -10,7 +10,7 @@ DEFAULT_CONFIG = {
     "APP_VERSION": "1.0.0",
     "APP_DEBUG": "False",
     "DATABASE_HOST": "localhost",
-    "DATABASE_PORT": "5432",  
+    "DATABASE_PORT": "3306",  
     "DATABASE_USER": "omms",
     "DATABASE_PASSWORD": "omms",
     "DATABASE_NAME": "omms"
@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     DATABASE_USER: str = os.getenv("DATABASE_USER", DEFAULT_CONFIG["DATABASE_USER"])
     DATABASE_PASSWORD: str = os.getenv("DATABASE_PASSWORD", DEFAULT_CONFIG["DATABASE_PASSWORD"])
     DATABASE_NAME: str = os.getenv("DATABASE_NAME", DEFAULT_CONFIG["DATABASE_NAME"])
-    DATABASE_URL: str = "postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}".format(
+    DATABASE_URL: str = "mysql+aiomysql://{user}:{password}@{host}:{port}/{db}".format(
         user=DATABASE_USER,
         password=DATABASE_PASSWORD,
         host=DATABASE_HOST,
@@ -64,6 +64,8 @@ class Settings(BaseSettings):
     
     # 添加 JWT 密钥
     SECRET_KEY: str = os.getenv("SECRET_KEY", "pqev3YhW8N5ivq8tlPJk7Q")
+    # Prometheus配置
+    PROMETHEUS_URL: str = os.getenv("PROMETHEUS_URL", "http://10.249.61.3:9090")
     class Config:
         case_sensitive = True
 
