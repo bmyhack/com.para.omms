@@ -56,7 +56,7 @@ class Settings(BaseSettings):
     DATABASE_PASSWORD: str = os.getenv("DATABASE_PASSWORD", DEFAULT_CONFIG["DATABASE_PASSWORD"])
     DATABASE_NAME: str = os.getenv("DATABASE_NAME", DEFAULT_CONFIG["DATABASE_NAME"])
     DB_ECHO: bool = os.getenv("DB_ECHO", DEFAULT_CONFIG["DB_ECHO"]).lower() == "true"
-    DATABASE_URL: str = "mysql+aiomysql://{user}:{password}@{host}:{port}/{db}".format(
+    DATABASE_URL: str = "mysql+pymysql://{user}:{password}@{host}:{port}/{db}".format(
         user=DATABASE_USER,
         password=DATABASE_PASSWORD,
         host=DATABASE_HOST,

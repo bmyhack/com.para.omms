@@ -1,10 +1,27 @@
+# Web框架
 uvicorn==0.34.0
 fastapi==0.115.11
+
+# 日志系统
 loguru==0.7.3
+
+# 配置管理
 pydantic==2.10.6
 pydantic-settings==2.8.1
 python-dotenv==1.0.1
+
+# 数据库
 SQLAlchemy==2.0.39
-asyncpg==0.30.0
-greenlet==3.1.1
+pymysql==1.1.0
+cryptography==42.0.5  # 添加 cryptography 包，用于 MySQL 认证
+
+# JWT认证
+python-jose==3.3.0
+passlib==1.7.4
+bcrypt==4.0.1
+
+# 监控
 prometheus-api-client==0.5.7
+
+# 工具库
+greenlet==3.1.1

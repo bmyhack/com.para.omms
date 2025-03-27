@@ -1,75 +1,62 @@
 from sqlalchemy import create_engine, text
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from contextlib import asynccontextmanager
+from sqlalchemy.orm import sessionmaker, declarative_base
+from contextlib import contextmanager
 from fastapi import Depends
 from .logger import debug, info, error
 from .config import settings
 from .events import on_startup, on_shutdown
-from sqlalchemy.ext.declarative import declarative_base
 import importlib
 import pkgutil
 import os
 
 # 数据库连接配置
 engine = None
-AsyncSessionLocal = None
+SessionLocal = None
+Base = declarative_base()
 
-async def init_db():
+def init_db():
     """初始化数据库引擎和会话工厂"""
-    global engine, AsyncSessionLocal
+    global engine, SessionLocal
     try:
-        # 使用异步引擎，URL格式：mysql+aiomysql://user:password@host:port/dbname
-        engine = create_async_engine(
-            settings.DATABASE_URL, 
-            echo=False,
+        # 使用同步引擎，URL格式：mysql+pymysql://user:password@host:port/dbname
+        engine = create_engine(
+            settings.DATABASE_URL.replace('mysql+aiomysql', 'mysql+pymysql'), 
+            echo=settings.DB_ECHO,  # 修改这里：DB_ECHO -> echo
+            pool_size=10,  # 连接池大小
+            max_overflow=20,  # 超过连接池大小外最多创建的连接
             pool_recycle=3600,  # 连接回收时间，避免MySQL的wait_timeout断开连接
             pool_pre_ping=True  # 连接前ping一下，确保连接有效
         )
         info("数据库引擎创建成功")
-        # 创建异步会话工厂
-        AsyncSessionLocal = sessionmaker(
-            engine, class_=AsyncSession, expire_on_commit=False
+        # 创建同步会话工厂
+        SessionLocal = sessionmaker(
+            autocommit=False, 
+            autoflush=False, 
+            bind=engine
         )
         return True
     except Exception as e:
         error(f"数据库引擎创建失败: {e}")
         raise
 
-# 异步上下文管理器用于管理会话
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from contextlib import asynccontextmanager
+# 同步上下文管理器用于管理会话
+@contextmanager
+def get_db_context():
+    """获取数据库会话的上下文管理器"""
+    session = SessionLocal()
+    try:
+        yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
-from .config import settings
-
-# 创建异步引擎
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.DB_ECHO,
-    future=True
-)
-
-# 创建异步会话工厂
-async_session_factory = sessionmaker(
-    engine, 
-    class_=AsyncSession, 
-    expire_on_commit=False
-)
-
-async def get_db():
-    """
-    获取数据库会话的依赖项函数
-    """
-    async with async_session_factory() as session:
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-
-Base = declarative_base()
+def get_db():
+    """获取数据库会话的依赖项函数"""
+    with get_db_context() as session:
+        yield session
 
 def load_all_models():
     """动态加载所有模型"""
@@ -84,35 +71,35 @@ def load_all_models():
             continue
 
 @on_startup
-async def verify_database_connection():
+def verify_database_connection():
     """应用启动时验证数据库连接并确保表存在"""
-    await init_db()
+    init_db()
     info("正在验证数据库连接...")
     try:
         # 加载所有模型
         load_all_models()
         
         # 创建所有表
-        async with engine.begin() as conn:
+        with engine.begin() as conn:
             info("正在检查并创建数据库表...")
             # 为MySQL设置字符集和引擎
-            await conn.execute(text("SET NAMES utf8mb4"))
-            await conn.execute(text("SET CHARACTER SET utf8mb4"))
-            await conn.run_sync(Base.metadata.create_all)
+            conn.execute(text("SET NAMES utf8mb4"))
+            conn.execute(text("SET CHARACTER SET utf8mb4"))
+            Base.metadata.create_all(bind=engine)
             info("数据库表创建/更新完成")
         
         # 验证连接
-        async with AsyncSessionLocal() as session:
-            await session.execute(text("SELECT 1"))
+        with get_db_context() as session:
+            session.execute(text("SELECT 1"))
             info("数据库连接验证成功")
     except Exception as e:
         error(f"数据库初始化失败: {e}")
         raise
 
 @on_shutdown
-async def close_database_connections():
+def close_database_connections():
     """应用关闭时关闭所有数据库连接"""
     info("正在关闭数据库连接池...")
     if engine:
-        await engine.dispose()
+        engine.dispose()
         info("数据库连接池已关闭")
